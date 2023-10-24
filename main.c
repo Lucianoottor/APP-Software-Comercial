@@ -7,6 +7,7 @@
 
 // Definir as structs
 struct enderecos {
+    char CEP[15];
     char strEstado[3];
     char strCidade[30];
     char strBairro[30];
@@ -25,17 +26,14 @@ struct clientes {
     int id_cliente;
     char nome_cliente[100];
     char email_cliente[100];
-    char cpf_cliente[12];
+    char cpf_cliente[15];
     struct enderecos strEndereco;  
 };
 
 // Funções do programa
 void cadastrarConta(struct clientes *Clientes, int *numClientes, struct enderecos *Enderecos) {
     struct clientes *novo_cliente = (struct clientes*)realloc(Clientes, (*numClientes + 1) * sizeof(struct clientes));
-
-    Clientes = novo_cliente;
-    (*numClientes)++;
-
+    struct enderecos *novo_endereco = (struct enderecos*)realloc(Clientes, (*numClientes + 1) * sizeof(struct enderecos));
 
     printf("Digite o nome do cliente: \n");
     scanf("%s", Clientes[*numClientes - 1].nome_cliente);
@@ -43,6 +41,8 @@ void cadastrarConta(struct clientes *Clientes, int *numClientes, struct endereco
     scanf("%s", Clientes[*numClientes - 1].email_cliente);
     printf("Digite o CPF do cliente: \n");
     scanf("%s", Clientes[*numClientes - 1].cpf_cliente);
+    printf("Digite o CEP: \n");
+    scanf("%s", Enderecos[*numClientes -1].CEP);
     printf("Insira a UF (unidade federal): \n");
     scanf("%s", Enderecos[*numClientes -1].strEstado);
     printf("Insira a cidade: \n");
@@ -52,10 +52,18 @@ void cadastrarConta(struct clientes *Clientes, int *numClientes, struct endereco
     printf("Insira o logradouro: \n");
     scanf("%s", Enderecos[*numClientes -1].strRua);
     printf("Insira o número da residência: \n");
-    scanf("%s", Enderecos[*numClientes -1].num_res);
+    scanf("%d", Enderecos[*numClientes -1].num_res);
 
     FILE *banco_de_dados = fopen("banco_de_dados.txt", "a+");
-    fprintf(banco_de_dados, "%s\n%s\n%s\n", Clientes[*numClientes - 1].nome_cliente, Clientes[*numClientes - 1].email_cliente, Clientes[*numClientes - 1].cpf_cliente);
+    fprintf(banco_de_dados, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%d\n", Clientes[*numClientes - 1].nome_cliente, 
+                                                                    Clientes[*numClientes - 1].email_cliente, 
+                                                                    Clientes[*numClientes - 1].cpf_cliente, 
+                                                                    Enderecos[*numClientes - 1].CEP,
+                                                                    Enderecos[*numClientes - 1].strEstado,
+                                                                    Enderecos[*numClientes - 1].strCidade,
+                                                                    Enderecos[*numClientes - 1].strBairro,
+                                                                    Enderecos[*numClientes - 1].strRua,
+                                                                    Enderecos[*numClientes - 1].num_res);
     fclose(banco_de_dados);
 
     printf("Cliente cadastrado com sucesso!\n");
@@ -136,6 +144,7 @@ int main() {
                 break;
             case 7:
                 adicionarEstoque(Produtos, numProdutos);
+                break;
             case 0:
                 printf("Encerrando programa...\n");
                 break;
