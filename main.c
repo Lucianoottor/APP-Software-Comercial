@@ -156,7 +156,7 @@ void cadastrarConta(struct clientes *Clientes, struct enderecos *Enderecos, int 
 }
 
 // Função excluirConta
-void excluirConta(const char *arquivo) {
+void excluirConta(const char *arquivo, const char *arquivo_2) {
 
     // Input usuario
     int input_usuario;
@@ -221,17 +221,139 @@ void excluirConta(const char *arquivo) {
         printf("Conta excluída com sucesso!\n");
     }
     }
-    /*else{
-        // Código de desativação de conta
-    }*/
+    // Algoritmo de desativação de conta
+    else{
+
+        //Input CPF
+        char cpf[15];
+        printf("Digite o CPF do usuário a ser desativado: \n");
+        while(scanf("%s", cpf)){
+            if(validarCPF(cpf) == 0){
+                printf("CPF inválido!\n");
+            }
+            else{
+                break;
+            }
+        }
+    
+        // Abrir o arquivo
+        FILE *banco_de_dados = fopen(arquivo, "r");
+        if (banco_de_dados == NULL) {
+            printf("Erro ao abrir arquivo.\n");
+            return;
+        }
+        
+        // Arquivo com contas desativadas
+        FILE *contas_desativadas = fopen(arquivo_2, "a+");
+        if (contas_desativadas == NULL){
+            printf("Erro ao abrir arquivo.\n");
+            return;
+        }
+
+        // Criação de arquivo temporário para deletar conta do banco de dados
+        char arquivoTemporario[] = "temp.txt";
+        FILE *arquivoTemp = fopen(arquivoTemporario, "w");
+        if (arquivoTemp == NULL) {
+            printf("Erro ao criar arquivo temporário.\n");
+            fclose(banco_de_dados);
+            return;
+        }
+        // Procurar conta com indicadores
+        char linha[100];
+        int encontrado = 0;
+        int excluir = 0;
+
+        // Algoritmo de desativação
+        while (fgets(linha, sizeof(linha), banco_de_dados)) {
+            if (strstr(linha, cpf) != NULL) {
+                encontrado = 1;
+                excluir = 1;
+            }
+            if (excluir == 1) {
+                fputs(linha, contas_desativadas);
+            }
+            if (strstr(linha, "NÚMERO: ")) {
+                excluir = 0;
+            }
+        }
+        // Encerrar subrotina
+        fclose(banco_de_dados);
+        fclose(contas_desativadas);
+
+        remove(arquivo);
+        rename(arquivoTemporario, arquivo);
+
+        if (!encontrado) {
+            printf("CPF não encontrado.\n");
+            return;
+        }
+        else {
+            printf("Conta desativada com sucesso!\n");
+        }
+    }
 }
 
+void realizarPedido(struct clientes *Clientes, int *numClientes, struct produtos *Produtos, int *numProdutos) {
 
+    char cpfCliente[15];
+    char nomeCliente[100];
+    char linha[100];
+    int input, cpfEncontrado = 1;
 
-/*
-void realizarPedido(struct clientes Clientes[], int numClientes, struct produtos Produtos[], int numProdutos) {
+// Abre arquivo para leitura dos dados
+    FILE *banco_de_dados = fopen("banco_de_dados.txt", "r");
+        if (banco_de_dados == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            return;
+        }
+    limparBufferEntrada();
 
-}*/
+// IDENTIFICAÇÃO DO CLIENTE QUE IRÁ REALIZAR O PEDIDO --- L O G I N
+    // Loop com menu para digitar o CPF ou voltar para o menu principal
+    do {
+        printf("[1] Digitar CPF\n");
+        printf("[2] Voltar\n");
+        printf("Selecione uma opção: ");
+        scanf("%d", &input);
+
+        switch(input){
+
+        // Digitar CPF
+            case 1: 
+                
+                printf("Digite o CPF: ");
+                limparBufferEntrada();
+                fgets(cpfCliente, sizeof(cpfCliente), stdin);
+
+            // Percorre o banco de dados para encontrar o cliente
+                while (fgets(linha, sizeof(linha), banco_de_dados)) {
+                    if (strstr(linha, "CPF:") != NULL && strstr(linha, cpfCliente) != NULL) {
+                        system("cls");
+                        system("clear");
+                        // Exibe o CPF encontrado
+                        printf("%s", linha);
+
+                        // Exibe também o nome do cliente
+                        fgets(linha, sizeof(linha), banco_de_dados);
+                        strcpy(nomeCliente, linha);
+                        printf("%s", nomeCliente);
+                        rewind(banco_de_dados);
+                        cpfEncontrado = 0;
+
+                        break;
+            // Caso o cliente não seja encontrado, aparece esse aviso e volta para o menu, dando a possibilidade de sair ou digitar novamente
+                    }else{
+                        printf("Cliente não encontrado!\n");
+                    }
+                }
+                break;
+            // Volta para o menu principal
+            case 2:
+                return;
+        }
+    } while(cpfEncontrado == 1);
+    fclose(banco_de_dados);
+}
 
 void verificarConta(const char *arquivo) {
 
@@ -265,10 +387,10 @@ void verificarConta(const char *arquivo) {
             imprimir = 1;
             encontrou = 1;
         }
-        if (encontrou) {
+        if (encontrou == 1) {
             printf("%s", linha);
         }
-        if (strstr(linha, "NÚMERO: ") != NULL) {
+        if (strstr(linha, "NÚMERO: ") != NULL && encontrou == 1) {
             imprimir = 0;
             break;
         }
@@ -286,10 +408,50 @@ void verificarConta(const char *arquivo) {
 void acompanharPedido(struct clientes Clientes[], int numClientes) {
  
 }
+*/
+void adicionarEstoque(struct produtos *Produtos, int *numProdutos){
 
-void adicionarEstoque(struct produtos Produtos[], int numProdutos){
+    int input, verificarCodigo, nova_quantidade;
+    struct produtos NovoProduto;
+
+    FILE *produtos = fopen("produtos.txt", "a+");
+
+    if(produtos == NULL){
+        printf("Erro ao abrir arquivo.\n");
+        return;
+    }
+
+    // Menu
+    printf("[1] Adicionar estoque de produto existente\n");
+    printf("[2] Adicionar novo produto\n");
+    printf("Selecione uma opção: ");
+    scanf("%d", &input);
+
+    switch(input){
+
+        case 1:
+            printf("Insira o código do produto: ");
+            scanf("%d", &verificarCodigo);
+            for(int i = 0; i < *numProdutos; i++){
+                if(Produtos[i].codigo_produto == verificarCodigo){
+                    printf("Produto encontrado!\n");
+                    printf("CÓDIGO: %d\n", Produtos[i].codigo_produto);
+                    printf("NOME: %s\n", Produtos[i].nome_produto);
+                    printf("PRECO/UNIDADE: %.2f\n", Produtos[i].preco_produto);
+                    printf("QUANTIDADE DISPONIVEL: %d\n", Produtos[i].quantidade_produto);
+
+                    printf("Digite a nova quantidade do produto: ");
+                    scanf("%d", &nova_quantidade);
+                    Produtos[i].quantidade_produto = nova_quantidade;
+                }
+            }
+            break;
+        case 2:
+            break;
+    }
+    fclose(produtos);
 }
-
+/*
 void verificarEstoque(struct produtos Produtos[], int numProdutos) {
 }
 */
@@ -301,7 +463,7 @@ int main() {
     struct produtos *Produtos = (struct produtos*)malloc(tam * sizeof(struct produtos));
     struct clientes *Clientes = (struct clientes*)malloc(tam * sizeof(struct clientes));
     int numClientes = 0;
-    int numProdutos = 0;
+    int numProdutos = 1;
     
     // Menu da da aplicação
     int input_usuario;
@@ -309,11 +471,11 @@ int main() {
         printf("\n=== Rede UP - Pedidos de Eletrônicos e Periféricos ===\n");
         printf("1. Cadastrar Conta\n");
         printf("2. Excluir/Desativar Conta\n");
-        printf("3. Realizar Pedido\n");
-        printf("4. Verificar Conta\n");
+        printf("3. Verificar Conta\n");
+        printf("4. Enviar Pedido\n");
         printf("5. Acompanhar Pedido\n");
-        printf("6. Verificar Estoque\n");
-        printf("7. Aumentar Estoque\n");
+        printf("6. Aumentar Estoque\n");
+        printf("7. Verificar Estoque\n");
         printf("0. Sair\n");
         printf("Selecione uma opção: ");
         scanf("%d", &input_usuario);
@@ -323,22 +485,22 @@ int main() {
                 cadastrarConta(Clientes, Enderecos, &numClientes);
                 break;
             case 2:
-                excluirConta("banco_de_dados.txt");
+                excluirConta("banco_de_dados.txt", "contas_desativadas.txt");
                 break;
-            /*case 3:
-                realizarPedido(Clientes, numClientes, Produtos, numProdutos);
-                break;*/
-            case 4:
+            case 3:
                 verificarConta("banco_de_dados.txt");
+                break;
+            case 4:
+                realizarPedido(Clientes, numClientes, Produtos, numProdutos);
                 break;
             /*case 5:
                 acompanharPedido(Clientes, numClientes);
-                break;
+                break;*/
             case 6:
-                verificarEstoque(Produtos, numProdutos);
-                break;
-            case 7:
                 adicionarEstoque(Produtos, numProdutos);
+                break;
+            /*case 7:
+                verificarEstoque(Produtos, numProdutos);
                 break;*/
             case 0:
                 printf("Encerrando programa...\n");
