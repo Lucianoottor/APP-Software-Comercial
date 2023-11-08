@@ -293,6 +293,7 @@ void excluirConta(const char *arquivo, const char *arquivo_2) {
     }
 }
 
+// Função realizar pedido
 void realizarPedido(struct clientes *Clientes, int *numClientes, struct produtos *Produtos, int *numProdutos) {
 
     char cpfCliente[15];
@@ -308,7 +309,7 @@ void realizarPedido(struct clientes *Clientes, int *numClientes, struct produtos
         }
     limparBufferEntrada();
 
-// IDENTIFICAÇÃO DO CLIENTE QUE IRÁ REALIZAR O PEDIDO --- L O G I N
+
     // Loop com menu para digitar o CPF ou voltar para o menu principal
     do {
         printf("[1] Digitar CPF\n");
@@ -355,6 +356,7 @@ void realizarPedido(struct clientes *Clientes, int *numClientes, struct produtos
     fclose(banco_de_dados);
 }
 
+// Função verificar conta
 void verificarConta(const char *arquivo) {
 
     // Input de CPF
@@ -404,19 +406,23 @@ void verificarConta(const char *arquivo) {
     }
 }
 
-/*
-void acompanharPedido(struct clientes Clientes[], int numClientes) {
+// Função para acompanhar pedido
+void acompanharPedido(const char *arquivo) {
  
 }
-*/
+// Função para adicionar estoque
 void adicionarEstoque(struct produtos *Produtos, int *numProdutos){
+        // Alocação dinâmica de struct
+        struct produtos *novo_produto = (struct produtos*)realloc(Produtos, (*numProdutos + 1) * sizeof(struct produtos));
+        if (novo_produto == NULL) {
+            printf("Falha ao alocar memória\n");
+            return;
+        }
+
 
     int input, verificarCodigo, nova_quantidade;
-    struct produtos NovoProduto;
-
-    FILE *produtos = fopen("produtos.txt", "a+");
-
-    if(produtos == NULL){
+    FILE *produtos_arquivo = fopen("produtos.txt", "a+");
+    if(produtos_arquivo == NULL){
         printf("Erro ao abrir arquivo.\n");
         return;
     }
@@ -426,6 +432,7 @@ void adicionarEstoque(struct produtos *Produtos, int *numProdutos){
     printf("[2] Adicionar novo produto\n");
     printf("Selecione uma opção: ");
     scanf("%d", &input);
+    getchar(); 
 
     switch(input){
 
@@ -447,14 +454,41 @@ void adicionarEstoque(struct produtos *Produtos, int *numProdutos){
             }
             break;
         case 2:
+            // Código do produto
+            printf("Insira o código do produto: \n");
+            scanf("%d", &Produtos[*numProdutos].codigo_produto);
+            fprintf(produtos_arquivo, "CÓDIGO: %d\n", Produtos[*numProdutos].codigo_produto);
+            printf("-----------------------\n");
+            getchar();
+
+            // Nome do produto
+            printf("Insira o nome do produto: \n");
+            fgets(Produtos[*numProdutos].nome_produto, sizeof(Produtos[*numProdutos].nome_produto), stdin);
+            strtok(Produtos[*numProdutos].nome_produto, "\n");
+            fprintf(produtos_arquivo, "NOME: %s\n", Produtos[*numProdutos].nome_produto);
+            printf("-----------------------\n");
+
+            // Preço
+            printf("Insira o preço do produto: \n");
+            scanf("%f", &Produtos[*numProdutos].preco_produto);
+            fprintf(produtos_arquivo, "PRECO/UNIDADE: %.2f\n", Produtos[*numProdutos].preco_produto);
+            printf("-----------------------\n");
+            
+            // Quantidade
+            printf("Insira a quantidade do produto: \n");
+            scanf("%d", &Produtos[*numProdutos].quantidade_produto);
+            fprintf(produtos_arquivo, "QUANTIDADE DISPONIVEL: %d\n", Produtos[*numProdutos].quantidade_produto);
+            printf("-----------------------\n");
+            (*numProdutos)++;
             break;
-    }
-    fclose(produtos);
+            }
+    fclose(produtos_arquivo);
 }
-/*
-void verificarEstoque(struct produtos Produtos[], int numProdutos) {
+
+// Função para verificar estoque
+void verificarEstoque(const char *arquivo) {
 }
-*/
+
 
 int main() {
 
@@ -467,48 +501,97 @@ int main() {
     
     // Menu da da aplicação
     int input_usuario;
+    int input_usuario_subrotina;
     do {
         printf("\n=== Rede UP - Pedidos de Eletrônicos e Periféricos ===\n");
-        printf("1. Cadastrar Conta\n");
-        printf("2. Excluir/Desativar Conta\n");
-        printf("3. Verificar Conta\n");
-        printf("4. Enviar Pedido\n");
-        printf("5. Acompanhar Pedido\n");
-        printf("6. Aumentar Estoque\n");
-        printf("7. Verificar Estoque\n");
+        printf("1. Contas\n");
+        printf("2. Produtos\n");
+        printf("3. Pedidos\n");
         printf("0. Sair\n");
-        printf("Selecione uma opção: ");
+        printf("Selecione uma opção: \n");
         scanf("%d", &input_usuario);
-        
-        switch(input_usuario) {
+        system("clear");
+
+        if(input_usuario == 1){
+            do{
+            printf("=== Menu de Contas ===\n");
+            printf("1. Cadastrar Conta\n");
+            printf("2. Excluir/Desativar Conta\n");
+            printf("3. Verificar Conta.\n");
+            printf("0. Sair\n");
+            printf("Selecione uma opção: \n");
+            limparBufferEntrada();
+            scanf("%d", &input_usuario_subrotina);
+            switch(input_usuario_subrotina){
+                case 1:
+                    cadastrarConta(Clientes, Enderecos, &numClientes);
+                    break;
+                case 2:
+                    excluirConta("banco_de_dados.txt", "contas_desativadas.txt");
+                    break;
+                case 3:
+                    system("clear");
+                    verificarConta("banco_de_dados.txt");
+                    break;
+                case 0:
+                    system("clear");
+                    break;
+                default:
+                    printf("Selecione uma opção válida!\n");
+                    break;
+            }
+            }while(input_usuario_subrotina != 0);
+        }
+        else if(input_usuario == 2){
+            do{
+            printf("=== Menu de Produtos ===\n");
+            printf("1. Aumentar Estoque.\n");
+            printf("2. Verificar Estoque\n");
+            printf("0. Sair\n");
+            printf("Selecione uma opção: \n");
+            limparBufferEntrada();
+            scanf("%d", &input_usuario_subrotina);
+            switch (input_usuario_subrotina){
             case 1:
-                cadastrarConta(Clientes, Enderecos, &numClientes);
-                break;
-            case 2:
-                excluirConta("banco_de_dados.txt", "contas_desativadas.txt");
-                break;
-            case 3:
-                verificarConta("banco_de_dados.txt");
-                break;
-            case 4:
-                realizarPedido(Clientes, numClientes, Produtos, numProdutos);
-                break;
-            /*case 5:
-                acompanharPedido(Clientes, numClientes);
-                break;*/
-            case 6:
                 adicionarEstoque(Produtos, numProdutos);
                 break;
-            /*case 7:
-                verificarEstoque(Produtos, numProdutos);
-                break;*/
+            case 2:
+                verificarEstoque("produtos.txt");
+                break;
             case 0:
-                printf("Encerrando programa...\n");
                 break;
             default:
-                printf("Opção inválida!!!\n");
+                printf("Selecione uma opção válida!\n");
+            }
+            }while(input_usuario_subrotina != 0);
         }
-    } while (input_usuario != 0);
+        else if(input_usuario == 3){
+            do{
+                printf("=== Menu de pedidos ===\n");
+                printf("1. Realizar pedido.\n");
+                printf("2. Acompanhar pedido.\n");
+                printf("0. Sair.\n");
+                limparBufferEntrada();
+                scanf("%d", &input_usuario_subrotina);
+                switch(input_usuario_subrotina){
+                    case 1:
+                        realizarPedido(Clientes, numClientes, Produtos, numProdutos);
+                        break;
+                    case 2:
+                        acompanharPedido("pedidos.txt");
+                        break;
+                    case 0:
+                        break;
+                    default:
+                        printf("Digite uma opção válida!\n");
+                }
+            }while(input_usuario_subrotina != 0);
+        }
+        else if(input_usuario == 0){
+            printf("Encerrando programa...");
+        }
+    } while(input_usuario!=0);
+        
 
     free(Enderecos);
     free(Clientes);
