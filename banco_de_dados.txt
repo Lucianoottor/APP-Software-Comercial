@@ -1,9 +1,1 @@
-CPF: 09443911922
-NOME: luciano
-E-MAIL: luciano@
-CEP: 843583
-UF: pr
-CIDADE: ekfge
-BAIRRO: wfnew
-LOGRADOURO: wfen
-NÚMERO: 23
+
